@@ -30,7 +30,6 @@ cd /home/papic/Documents/USM/TLP/Certamen3
 ### 2. URLs a Tener Abiertas en Pestañas
 - Frontend: http://localhost:8000/
 - Admin: http://localhost:8000/admin/
-- API Docs: http://localhost:8000/api/v1/docs/
 - Postman/Thunder Client preparado para API
 
 ### 3. Credenciales Preparadas
