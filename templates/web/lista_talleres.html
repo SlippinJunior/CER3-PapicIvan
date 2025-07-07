@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Talleres - Municipalidad Villa Verde{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- Sidebar con filtros -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>Filtrar por Categoría
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="get">
+                        <div class="list-group list-group-flush">
+                            <a href="{% url 'web:lista_talleres' %}" 
+                               class="list-group-item list-group-item-action {% if not categoria_seleccionada %}active{% endif %}">
+                                <i class="fas fa-list me-2"></i>Todas las categorías
+                            </a>
+                            {% for categoria in categorias %}
+                            <a href="?categoria={{ categoria.id }}" 
+                               class="list-group-item list-group-item-action {% if categoria_seleccionada == categoria.id|stringformat:'s' %}active{% endif %}">
+                                <i class="fas fa-tag me-2"></i>{{ categoria.nombre }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de talleres -->
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    Talleres Disponibles
+                </h2>
+                <span class="badge bg-primary fs-6">
+                    {{ talleres.paginator.count }} taller{{ talleres.paginator.count|pluralize:"es" }}
+                </span>
+            </div>
+
+            {% if talleres %}
+            <div class="row">
+                {% for taller in talleres %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">{{ taller.categoria.nombre }}</span>
+                            {% if taller.precio > 0 %}
+                                <span class="badge bg-success">${{ taller.precio|floatformat:0 }}</span>
+                            {% else %}
+                                <span class="badge bg-success">Gratuito</span>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ taller.titulo }}</h5>
+                            <p class="card-text">{{ taller.descripcion|truncatewords:20 }}</p>
+                            
+                            <div class="row small text-muted mb-3">
+                                <div class="col-12 mb-2">
+                                    <i class="fas fa-user me-1"></i>
+                                    <strong>Profesor:</strong> {{ taller.profesor.nombre_completo }}
+                                </div>
+                                <div class="col-12 mb-2">
+                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                    <strong>Lugar:</strong> {{ taller.lugar.nombre }}
+                                </div>
+                                <div class="col-6">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    {{ taller.fecha|date:"d/m/Y" }}
+                                </div>
+                                <div class="col-6">
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ taller.hora_inicio|time:"H:i" }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-users me-1"></i>
+                                    {{ taller.cupos_maximos }} cupos disponibles
+                                </small>
+                                <a href="{% url 'web:detalle_taller' taller.id %}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>Ver Detalle
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Paginación -->
+            {% if talleres.has_other_pages %}
+            <nav aria-label="Paginación de talleres">
+                <ul class="pagination justify-content-center">
+                    {% if talleres.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if categoria_seleccionada %}&categoria={{ categoria_seleccionada }}{% endif %}">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ talleres.previous_page_number }}{% if categoria_seleccionada %}&categoria={{ categoria_seleccionada }}{% endif %}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in talleres.paginator.page_range %}
+                        {% if talleres.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > talleres.number|add:'-3' and num < talleres.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if categoria_seleccionada %}&categoria={{ categoria_seleccionada }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if talleres.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ talleres.next_page_number }}{% if categoria_seleccionada %}&categoria={{ categoria_seleccionada }}{% endif %}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ talleres.paginator.num_pages }}{% if categoria_seleccionada %}&categoria={{ categoria_seleccionada }}{% endif %}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No se encontraron talleres</h4>
+                <p class="text-muted">
+                    {% if categoria_seleccionada %}
+                        No hay talleres disponibles en la categoría seleccionada.
+                        <br>
+                        <a href="{% url 'web:lista_talleres' %}" class="btn btn-outline-primary mt-2">
+                            Ver todas las categorías
+                        </a>
+                    {% else %}
+                        No hay talleres programados en este momento.
+                    {% endif %}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
