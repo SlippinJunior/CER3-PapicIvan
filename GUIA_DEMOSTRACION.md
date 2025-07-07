@@ -371,10 +371,66 @@ Junta 12: junta12 / junta123 (API)
    → Mostrar respuesta: Taller creado pero estado "rechazado"
    → Mostrar observación automática: "No se programan talleres en feriados irrenunciables"
    → Ir a Admin y verificar: estado rechazado automáticamente
+   ```
+
+5. **Demostrar validación de feriados NO irrenunciables - Categoría NO permitida**
+   ```http
+   POST http://localhost:8000/api/v1/talleres-viewset/
+   Authorization: Token [token-obtenido]
+   Content-Type: application/json
+
+   {
+     "titulo": "Taller de Pintura",
+     "descripcion": "Técnicas básicas de pintura al óleo",
+     "categoria": 2,
+     "profesor": 102,
+     "lugar": 3,
+     "fecha": "2025-07-16",
+     "hora_inicio": "14:00",
+     "duracion_horas": 3,
+     "cupos_maximos": 12,
+     "precio": 5000
+   }
+
+   → Explicar: "16 de julio es feriado por Día de la Virgen del Carmen (feriado NO irrenunciable)"
+   → Explicar: "Categoría 2 es 'Arte', NO es 'Aire Libre'"
+   → Mostrar respuesta: Taller creado pero estado "rechazado"
+   → Mostrar observación automática: "Sólo se programan talleres al aire libre en feriados"
+   → Ir a Admin y verificar: estado rechazado automáticamente
+   ```
+
+6. **Demostrar validación de feriados NO irrenunciables - Categoría SÍ permitida**
+   ```http
+   POST http://localhost:8000/api/v1/talleres-viewset/
+   Authorization: Token [token-obtenido]
+   Content-Type: application/json
+
+   {
+     "titulo": "Caminata Ecológica Comunitaria",
+     "descripcion": "Exploración de senderos naturales en grupo",
+     "categoria": 1,
+     "profesor": 101,
+     "lugar": 8,
+     "fecha": "2025-07-16",
+     "hora_inicio": "09:00",
+     "duracion_horas": 4,
+     "cupos_maximos": 20,
+     "precio": 0
+   }
+
+   → Explicar: "16 de julio es feriado por Día de la Virgen del Carmen (feriado NO irrenunciable)"
+   → Explicar: "Categoría 1 es 'Aire Libre' - ¡PERMITIDA en feriados!"
+   → Mostrar respuesta: Taller creado con estado "pendiente"
+   → Mostrar observación: vacía (sin restricciones)
+   → Ir a Admin y verificar: estado pendiente (listo para aprobación)
    
    → Puntos clave:
      * API consulta feriados en tiempo real
-     * Validación automática sin intervención manual
+     * Lógica de negocio compleja automatizada
+     * Tres escenarios diferentes manejados automáticamente:
+       - Feriado irrenunciable → Siempre rechazado
+       - Feriado NO irrenunciable + categoría normal → Rechazado  
+       - Feriado NO irrenunciable + "Aire Libre" → Pendiente
      * Integración real con API gubernamental chilena
    ```
 
@@ -383,7 +439,17 @@ Junta 12: junta12 / junta123 (API)
 - "Validaciones automáticas en tiempo real"
 - "Integración directa con sistema administrativo"
 - "REQ06: Validación automática de feriados funcionando en la API"
-- "Sistema rechaza automáticamente talleres en feriados irrenunciables"
+- "Sistema implementa las 3 reglas de negocio automáticamente"
+
+**📋 Resumen de Lógica de Feriados (para explicar durante demo):**
+
+| Tipo de Feriado | Categoría | Resultado | Observación |
+|------------------|-----------|-----------|-------------|
+| Irrenunciable | Cualquiera | **Rechazado** | "No se programan talleres en feriados irrenunciables" |
+| NO Irrenunciable | Normal (Arte, Música, etc.) | **Rechazado** | "Sólo se programan talleres al aire libre en feriados" |
+| NO Irrenunciable | **Aire Libre** | **Pendiente** | *(Sin observación - listo para aprobación)* |
+
+💡 **Para la demo:** Usar 29 de junio (San Pedro y San Pablo) como feriado NO irrenunciable
 
 ---
 
